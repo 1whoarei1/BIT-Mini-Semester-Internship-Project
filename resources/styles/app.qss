@@ -1,0 +1,40 @@
+QMainWindow, QDialog {
+    background: #f4f7fb;
+    color: #172033;
+    font-family: "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+    font-size: 14px;
+}
+#titleLabel { color: #14213d; font-size: 28px; font-weight: 700; }
+#tipLabel { color: #64748b; }
+QGroupBox {
+    background: white; border: 1px solid #dbe4f0; border-radius: 14px;
+    font-size: 16px; font-weight: 600; margin-top: 12px; padding-top: 14px;
+}
+QGroupBox::title { subcontrol-origin: margin; left: 14px; padding: 0 6px; }
+QLineEdit, QDoubleSpinBox, QSpinBox {
+    background: white; border: 1px solid #cbd5e1; border-radius: 9px;
+    padding: 8px 10px; selection-background-color: #2563eb;
+}
+QLineEdit:focus, QDoubleSpinBox:focus, QSpinBox:focus { border: 2px solid #2563eb; }
+#expressionEdit { font-family: "DejaVu Sans Mono", monospace; font-size: 22px; padding: 10px 14px; }
+#resultLabel {
+    background: #eaf2ff; border-radius: 10px; color: #1d4ed8;
+    font-size: 22px; font-weight: 700; padding: 8px 14px;
+}
+QPushButton {
+    background: #eef2f7; border: 1px solid #d5deea; border-radius: 9px;
+    min-height: 38px; padding: 5px 12px; font-size: 15px; font-weight: 600;
+}
+QPushButton:hover { background: #dbeafe; border-color: #60a5fa; }
+QPushButton:pressed { background: #bfdbfe; }
+DragTokenButton { min-width: 48px; min-height: 48px; font-size: 19px; }
+#equalsButton, #simpleInterestButton, #compoundInterestButton, #settingsButton {
+    background: #2563eb; border-color: #2563eb; color: white;
+}
+#equalsButton:hover, #simpleInterestButton:hover, #compoundInterestButton:hover, #settingsButton:hover { background: #1d4ed8; }
+#clearButton { background: #fff1f2; border-color: #fecdd3; color: #be123c; }
+#financeResultLabel {
+    background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;
+    color: #166534; font-size: 16px; font-weight: 600; padding: 12px;
+}
+QStatusBar { background: white; color: #475569; }

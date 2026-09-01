@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FinancialSettingsDialog</class>
+ <widget class="QDialog" name="FinancialSettingsDialog">
+  <property name="geometry"><rect><x>0</x><y>0</y><width>420</width><height>230</height></rect></property>
+  <property name="windowTitle"><string>财务参数设置</string></property>
+  <property name="modal"><bool>true</bool></property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin"><number>24</number></property><property name="topMargin"><number>20</number></property><property name="rightMargin"><number>24</number></property><property name="bottomMargin"><number>20</number></property><property name="spacing"><number>16</number></property>
+   <item><widget class="QLabel" name="descriptionLabel"><property name="text"><string>设置常用年利率和投资年限。点击确定后，参数将通过信号与槽传回主窗口。</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <property name="verticalSpacing"><number>14</number></property>
+     <item row="0" column="0"><widget class="QLabel" name="rateLabel"><property name="text"><string>年利率</string></property></widget></item>
+     <item row="0" column="1"><widget class="QDoubleSpinBox" name="rateSpinBox"><property name="maximum"><double>100.000000000000000</double></property><property name="singleStep"><double>0.100000000000000</double></property><property name="value"><double>3.000000000000000</double></property><property name="suffix"><string> %</string></property><property name="decimals"><number>2</number></property></widget></item>
+     <item row="1" column="0"><widget class="QLabel" name="yearsLabel"><property name="text"><string>年限</string></property></widget></item>
+     <item row="1" column="1"><widget class="QSpinBox" name="yearsSpinBox"><property name="minimum"><number>1</number></property><property name="maximum"><number>100</number></property><property name="value"><number>3</number></property><property name="suffix"><string> 年</string></property></widget></item>
+    </layout>
+   </item>
+   <item><spacer name="verticalSpacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>20</height></size></property></spacer></item>
+   <item><widget class="QDialogButtonBox" name="buttonBox"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="standardButtons"><set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set></property></widget></item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

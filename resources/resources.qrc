@@ -1,0 +1,6 @@
+<RCC>
+ <qresource prefix="/">
+  <file>styles/app.qss</file>
+  <file>icons/calculator.svg</file>
+ </qresource>
+</RCC>
