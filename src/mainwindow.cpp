@@ -14,6 +14,8 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // 统一连接按钮、输入框和设置对话框的信号与槽。
     connectTokenButtons();
 
     connect(ui->clearButton, &QPushButton::clicked, this, &MainWindow::clearExpression);
@@ -74,6 +76,7 @@ void MainWindow::backspaceExpression()
 
 void MainWindow::calculateExpression()
 {
+    // 主窗口只负责展示结果，表达式解析交由 CalculatorModel 完成。
     const CalculationResult result = CalculatorModel::evaluate(ui->expressionEdit->text());
     if (!result.ok)
     {

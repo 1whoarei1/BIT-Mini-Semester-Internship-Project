@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
     application.setOrganizationName(QStringLiteral("BIT Mini Semester"));
     application.setWindowIcon(QIcon(QStringLiteral(":/icons/calculator.svg")));
 
+    // 从 Qt 资源系统加载统一的界面样式。
     QFile styleFile(QStringLiteral(":/styles/app.qss"));
     if (styleFile.open(QIODevice::ReadOnly | QIODevice::Text))
     {

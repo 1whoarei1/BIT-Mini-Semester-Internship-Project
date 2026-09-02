@@ -9,6 +9,7 @@ class ExpressionParser
   public:
     explicit ExpressionParser(QString expression) : m_expression(std::move(expression))
     {
+        // 先统一处理界面输入的空格、乘号和除号，便于后续解析。
         m_expression.remove(' ');
         m_expression.replace(QChar(0x00D7), '*');
         m_expression.replace(QChar(0x00F7), '/');
@@ -21,6 +22,7 @@ class ExpressionParser
             return failure(QStringLiteral("表达式不能为空"));
         }
 
+        // 使用递归下降方法按优先级解析整个表达式。
         const double value = parseExpression();
         if (!m_error.isEmpty())
         {
@@ -38,6 +40,7 @@ class ExpressionParser
     }
 
   private:
+    // 处理加减运算，parseTerm() 保证乘除优先计算。
     double parseExpression()
     {
         double value = parseTerm();
@@ -55,6 +58,7 @@ class ExpressionParser
         return value;
     }
 
+    // 处理乘除运算，并在这里检查除数是否为零。
     double parseTerm()
     {
         double value = parseFactor();
@@ -116,6 +120,7 @@ class ExpressionParser
         return parseNumber();
     }
 
+    // 从当前位置读取一个整数或小数，并交给 Qt 做格式转换。
     double parseNumber()
     {
         const qsizetype start = m_position;
@@ -171,10 +176,12 @@ CalculationResult CalculatorModel::evaluate(const QString &expression)
 
 double CalculatorModel::simpleInterestTotal(double principal, double annualRatePercent, int years)
 {
+    // 年利率以百分数传入，因此计算前需要除以 100。
     return principal * (1.0 + annualRatePercent / 100.0 * years);
 }
 
 double CalculatorModel::compoundInterestTotal(double principal, double annualRatePercent, int years)
 {
+    // 复利按照“本金 × (1 + 年利率)^年限”计算到期本息。
     return principal * std::pow(1.0 + annualRatePercent / 100.0, years);
 }
