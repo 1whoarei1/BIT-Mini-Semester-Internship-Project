@@ -1,0 +1,65 @@
+#include "dropzonewidget.h"
+
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QFileInfo>
+#include <QMimeData>
+#include <QStyle>
+#include <QUrl>
+
+DropZoneWidget::DropZoneWidget(QWidget *parent) : QLabel(parent)
+{
+    setAcceptDrops(true);
+    setAlignment(Qt::AlignCenter);
+    setWordWrap(true);
+    setProperty("dragActive", false);
+}
+
+void DropZoneWidget::dragEnterEvent(QDragEnterEvent *event)
+{
+    // 只接收一个本地普通文件，进入拖拽区时通过动态属性触发 QSS 高亮。
+    const QList<QUrl> urls = event->mimeData()->urls();
+    if (urls.size() == 1 && urls.first().isLocalFile()
+        && QFileInfo(urls.first().toLocalFile()).isFile())
+    {
+        event->acceptProposedAction();
+        setDragActive(true);
+        return;
+    }
+    event->ignore();
+}
+
+void DropZoneWidget::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    setDragActive(false);
+    event->accept();
+}
+
+void DropZoneWidget::dropEvent(QDropEvent *event)
+{
+    setDragActive(false);
+    const QList<QUrl> urls = event->mimeData()->urls();
+    if (urls.size() != 1 || !urls.first().isLocalFile())
+    {
+        event->ignore();
+        return;
+    }
+
+    const QString filePath = urls.first().toLocalFile();
+    if (!QFileInfo(filePath).isFile())
+    {
+        event->ignore();
+        return;
+    }
+
+    event->acceptProposedAction();
+    emit fileDropped(filePath);
+}
+
+void DropZoneWidget::setDragActive(bool active)
+{
+    setProperty("dragActive", active);
+    style()->unpolish(this);
+    style()->polish(this);
+    update();
+}

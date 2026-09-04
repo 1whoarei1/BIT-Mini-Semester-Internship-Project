@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="transfer.svg">icons/transfer.svg</file>
+        <file alias="connect.svg">icons/connect.svg</file>
+        <file alias="send.svg">icons/send.svg</file>
+        <file alias="folder.svg">icons/folder.svg</file>
+        <file alias="settings.svg">icons/settings.svg</file>
+    </qresource>
+    <qresource prefix="/styles">
+        <file alias="app.qss">styles/app.qss</file>
+    </qresource>
+</RCC>

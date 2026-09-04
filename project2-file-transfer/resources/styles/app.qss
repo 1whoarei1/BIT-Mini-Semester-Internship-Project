@@ -1,0 +1,103 @@
+* {
+    font-family: "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+    font-size: 14px;
+}
+QMainWindow, QDialog {
+    background: #f4f7fb;
+    color: #243246;
+}
+QLabel#titleLabel {
+    color: #173b6d;
+    font-size: 26px;
+    font-weight: 700;
+    padding: 6px;
+}
+QLabel#dialogTitleLabel {
+    color: #173b6d;
+    font-size: 19px;
+    font-weight: 700;
+}
+QGroupBox {
+    background: white;
+    border: 1px solid #d9e2ef;
+    border-radius: 10px;
+    margin-top: 13px;
+    padding: 13px 10px 10px 10px;
+    font-weight: 600;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 14px;
+    padding: 0 6px;
+    color: #315a8a;
+}
+QPushButton {
+    min-height: 34px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 7px;
+    background: #2878d0;
+    color: white;
+    font-weight: 600;
+}
+QPushButton:hover { background: #1767bd; }
+QPushButton:pressed { background: #10569f; }
+QPushButton:disabled { background: #b7c4d3; color: #eef2f6; }
+QPushButton#disconnectButton { background: #df5b5b; }
+QPushButton#disconnectButton:hover { background: #c84444; }
+QLineEdit, QSpinBox, QComboBox {
+    min-height: 34px;
+    padding: 0 8px;
+    background: white;
+    border: 1px solid #c9d5e4;
+    border-radius: 6px;
+    selection-background-color: #2878d0;
+}
+QLineEdit:focus, QSpinBox:focus, QComboBox:focus { border: 1px solid #2878d0; }
+QTextEdit {
+    background: #142033;
+    color: #dce8f7;
+    border: 1px solid #243a57;
+    border-radius: 7px;
+    padding: 8px;
+    font-family: "Noto Sans Mono CJK SC", "Consolas", monospace;
+}
+DropZoneWidget {
+    color: #52749a;
+    background: #f7fbff;
+    border: 2px dashed #82acd7;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+}
+DropZoneWidget:hover { background: #edf6ff; border-color: #2878d0; }
+DropZoneWidget[dragActive="true"] {
+    color: #0d5eae;
+    background: #dceeff;
+    border: 3px solid #2878d0;
+}
+DropZoneWidget:disabled { color: #9aa9ba; background: #f0f2f5; border-color: #c6ced8; }
+QProgressBar {
+    min-height: 20px;
+    border: 1px solid #cbd6e3;
+    border-radius: 8px;
+    background: #edf1f6;
+    text-align: center;
+    color: #243246;
+}
+QProgressBar::chunk {
+    border-radius: 7px;
+    background: #32a871;
+}
+QLabel#connectionStatusLabel {
+    padding: 7px 13px;
+    border-radius: 12px;
+    background: #e8edf3;
+    color: #5c6b7a;
+    font-weight: 700;
+}
+QLabel#connectionStatusLabel[connected="true"] {
+    background: #d9f4e6;
+    color: #18794e;
+}
+QStatusBar { background: #e7edf5; color: #3c526c; }
