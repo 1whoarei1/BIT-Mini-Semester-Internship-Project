@@ -36,6 +36,7 @@ private slots:
 
 void TransferManagerTest::transfersImageAndUtf8NamedTextFile()
 {
+    // 在同一事件循环中启动真实 TCP 服务端和客户端，校验文本及二进制文件逐字节一致。
     QTemporaryDir sourceDirectory;
     QTemporaryDir receiveDirectory;
     QVERIFY(sourceDirectory.isValid());
@@ -105,6 +106,7 @@ void TransferManagerTest::transfersImageAndUtf8NamedTextFile()
 
 void TransferManagerTest::handlesFragmentedAndCoalescedFrames()
 {
+    // 先故意拆开第一个协议头，再把其余部分与第二帧粘连发送，覆盖 TCP 分包/粘包场景。
     QTemporaryDir receiveDirectory;
     QVERIFY(receiveDirectory.isValid());
 

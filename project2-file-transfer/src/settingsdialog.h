@@ -8,6 +8,7 @@ namespace Ui
 class SettingsDialog;
 }
 
+// 独立收集角色、地址、端口和保存路径，并通过自定义信号传递配置。
 class SettingsDialog : public QDialog
 {
     Q_OBJECT

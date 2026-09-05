@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
     application.setOrganizationName(QStringLiteral("BIT Mini Semester"));
     application.setWindowIcon(QIcon(QStringLiteral(":/icons/transfer.svg")));
 
+    // QSS 和图标均从 qrc 资源读取，发布程序时无需依赖外部资源文件路径。
     QFile styleFile(QStringLiteral(":/styles/app.qss"));
     if (styleFile.open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -25,6 +26,7 @@ int main(int argc, char *argv[])
     const QStringList arguments = application.arguments();
     if (arguments.contains(QStringLiteral("--smoke-test")))
     {
+        // 无界面测试模式短暂运行事件循环，用于验证 UI、资源和启动流程能够正常加载。
         QTimer::singleShot(800, &application, &QCoreApplication::quit);
     }
 

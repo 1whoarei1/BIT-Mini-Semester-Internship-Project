@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
     savePath_ = QDir(downloadPath).filePath(QStringLiteral("FileTransferReceived"));
     QDir().mkpath(savePath_);
 
+    // 第一组连接处理用户操作：主窗口只收集参数和更新控件，不直接进行 Socket 读写。
     connect(ui->settingsButton, &QPushButton::clicked, this, &MainWindow::openSettings);
     connect(ui->connectButton, &QPushButton::clicked, this, &MainWindow::startConnection);
     connect(ui->disconnectButton, &QPushButton::clicked, &transferManager_,
@@ -34,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->sendButton, &QPushButton::clicked, this, &MainWindow::sendSelectedFile);
     connect(ui->dropZone, &DropZoneWidget::fileDropped, this, &MainWindow::handleDroppedFile);
 
+    // 第二组连接处理网络层反馈，通过信号把状态、日志和进度安全地同步到界面。
     connect(&transferManager_, &TransferManager::stateChanged, this, &MainWindow::updateState);
     connect(&transferManager_, &TransferManager::logMessage, this, &MainWindow::appendLog);
     connect(&transferManager_, &TransferManager::sendProgress, this,
@@ -116,6 +118,7 @@ void MainWindow::sendSelectedFile()
 
 void MainWindow::handleDroppedFile(const QString &filePath)
 {
+    // 拖拽与“选择文件”共用同一发送入口，避免两套路径产生不同的校验行为。
     setSelectedFile(filePath);
     appendLog(QStringLiteral("已拖入文件，准备自动发送：%1").arg(filePath));
     transferManager_.sendFile(filePath);
@@ -128,6 +131,7 @@ void MainWindow::updateState(bool active, bool connected, const QString &descrip
     ui->connectionStatusLabel->style()->unpolish(ui->connectionStatusLabel);
     ui->connectionStatusLabel->style()->polish(ui->connectionStatusLabel);
 
+    // 根据网络状态统一控制按钮，防止连接过程中重复启动或未连接时误发送。
     ui->connectButton->setEnabled(!active);
     ui->disconnectButton->setEnabled(active);
     ui->settingsButton->setEnabled(!active);
@@ -174,6 +178,7 @@ void MainWindow::appendLog(const QString &message)
 
 int MainWindow::progressPercent(qint64 current, qint64 total)
 {
+    // 空文件没有可传输字节，协议头处理完成后直接视为 100%。
     if (total == 0)
     {
         return 100;

@@ -7,6 +7,7 @@ class QDragEnterEvent;
 class QDragLeaveEvent;
 class QDropEvent;
 
+// 支持本地单文件拖放的标签控件，通过重写拖拽事件向主窗口报告文件路径。
 class DropZoneWidget : public QLabel
 {
     Q_OBJECT

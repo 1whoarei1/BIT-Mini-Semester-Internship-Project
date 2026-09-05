@@ -13,6 +13,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 {
     ui->setupUi(this);
 
+    // 对话框内部只处理表单交互；确认后通过 settingsApplied 信号把结果交给主窗口。
     connect(ui->browseButton, &QPushButton::clicked, this, &SettingsDialog::chooseSavePath);
     connect(ui->roleComboBox, &QComboBox::currentIndexChanged, this,
             &SettingsDialog::updateRoleUi);
@@ -67,6 +68,7 @@ void SettingsDialog::applyAndAccept()
         return;
     }
 
+    // 提前创建目录，在开始监听或连接前就向用户反馈无效路径和权限问题。
     QDir directory;
     if (!directory.mkpath(savePath))
     {
@@ -84,6 +86,7 @@ void SettingsDialog::applyAndAccept()
 void SettingsDialog::updateRoleUi()
 {
     const bool serverMode = ui->roleComboBox->currentIndex() == 1;
+    // 服务端固定监听全部 IPv4 地址，无需用户填写远端主机；客户端则必须填写。
     ui->hostEdit->setEnabled(!serverMode);
     ui->hostLabel->setText(serverMode ? QStringLiteral("监听地址：")
                                       : QStringLiteral("服务器地址："));

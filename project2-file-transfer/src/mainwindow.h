@@ -10,6 +10,7 @@ namespace Ui
 class MainWindow;
 }
 
+// 主窗口负责组织界面交互，并通过 TransferManager 的信号与槽展示网络状态。
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

@@ -15,14 +15,17 @@ namespace
 constexpr quint32 ProtocolMagic = 0x46544631; // "FTF1"
 constexpr quint8 ProtocolVersion = 1;
 constexpr quint8 FileMessage = 1;
+// 固定协议头共 18 字节，各整数统一使用大端序，保证不同主机之间解析结果一致。
 constexpr qsizetype FixedHeaderSize = 4 + 1 + 1 + 4 + 8;
 constexpr quint32 MaximumFileNameBytes = 4096;
+// 每次最多从磁盘读取 64 KiB，并限制 Socket 待发送缓存，避免大文件一次性占满内存。
 constexpr qint64 SendChunkSize = 64 * 1024;
 constexpr qint64 MaximumPendingSocketBytes = 256 * 1024;
 }
 
 TransferManager::TransferManager(QObject *parent) : QObject(parent)
 {
+    // QTcpServer 收到连接后异步发出 newConnection，槽函数负责取出并绑定客户端 Socket。
     connect(&server_, &QTcpServer::newConnection, this,
             &TransferManager::acceptPendingConnection);
 }
@@ -60,6 +63,7 @@ bool TransferManager::start()
 
     if (mode_ == Mode::Server)
     {
+        // 服务端监听全部 IPv4 网卡，便于同机和局域网客户端使用同一套程序连接。
         if (!server_.listen(QHostAddress::AnyIPv4, port_))
         {
             emit transferError(QStringLiteral("监听失败：%1").arg(server_.errorString()));
@@ -72,6 +76,7 @@ bool TransferManager::start()
         return true;
     }
 
+    // connectToHost 为异步调用，连接结果由 connected/errorOccurred 信号返回。
     auto *socket = new QTcpSocket(this);
     attachSocket(socket);
     emit logMessage(QStringLiteral("正在连接 %1:%2").arg(host_).arg(port_));
@@ -164,6 +169,7 @@ QByteArray TransferManager::createHeader(const QByteArray &fileName, quint64 fil
 {
     QByteArray header;
     QDataStream stream(&header, QIODevice::WriteOnly);
+    // 显式固定字节序和流版本，发送端与接收端必须采用完全相同的编码方式。
     stream.setByteOrder(QDataStream::BigEndian);
     stream.setVersion(QDataStream::Qt_6_2);
     stream << ProtocolMagic << ProtocolVersion << FileMessage
@@ -174,11 +180,13 @@ QByteArray TransferManager::createHeader(const QByteArray &fileName, quint64 fil
 
 void TransferManager::acceptPendingConnection()
 {
+    // 一次 newConnection 信号可能对应多个排队连接，因此必须循环取完等待队列。
     while (server_.hasPendingConnections())
     {
         QTcpSocket *pendingSocket = server_.nextPendingConnection();
         if (isConnected())
         {
+            // 本作业界面按单客户端设计，已有连接时明确拒绝后续客户端，防止状态互相覆盖。
             emit logMessage(QStringLiteral("已有客户端连接，已拒绝新的连接请求。"));
             pendingSocket->disconnectFromHost();
             pendingSocket->deleteLater();
@@ -193,12 +201,14 @@ void TransferManager::acceptPendingConnection()
 
 void TransferManager::attachSocket(QTcpSocket *socket)
 {
+    // 同一时刻只维护一个有效 Socket；绑定新连接前先清理旧连接及其信号槽。
     releaseSocket(true);
     socket_ = socket;
     socket->setParent(this);
 
-    // 网络层全部采用 Qt 异步信号，避免阻塞 GUI 事件循环。
+    // 网络层全部采用 Qt 异步信号，避免 waitFor... 一类阻塞调用卡住 GUI 事件循环。
     connect(socket, &QTcpSocket::readyRead, this, &TransferManager::readIncomingData);
+    // bytesWritten 表示底层缓存腾出了空间，据此继续泵送下一段文件数据。
     connect(socket, &QTcpSocket::bytesWritten, this, &TransferManager::continueSending);
     connect(socket, &QTcpSocket::connected, this, [this, socket]()
             {
@@ -257,6 +267,7 @@ void TransferManager::releaseSocket(bool abortSocket)
     }
 
     QTcpSocket *socket = socket_.data();
+    // 先清空成员并断开信号，避免 abort()/deleteLater() 触发回调后再次操作已释放状态。
     socket_ = nullptr;
     socket->disconnect(this);
     if (abortSocket)
@@ -272,6 +283,7 @@ void TransferManager::readIncomingData()
     {
         return;
     }
+    // readyRead 只说明“当前有数据”，不保证一次读到一个完整协议帧。
     receiveBuffer_.append(socket_->readAll());
     processReceiveBuffer();
 }
@@ -288,6 +300,7 @@ void TransferManager::processReceiveBuffer()
                 return;
             }
 
+            // 缓冲区达到固定头长度后先窥视解析；文件名尚未收全时不移除任何字节。
             const QByteArray fixedHeader = receiveBuffer_.left(FixedHeaderSize);
             QDataStream stream(fixedHeader);
             stream.setByteOrder(QDataStream::BigEndian);
@@ -320,6 +333,7 @@ void TransferManager::processReceiveBuffer()
             const QByteArray fileNameBytes = receiveBuffer_.left(fileNameLength);
             receiveBuffer_.remove(0, fileNameLength);
 
+            // 只保留基础文件名，丢弃对端可能携带的目录，避免把文件写出指定保存目录。
             receiveFileName_ = QFileInfo(QString::fromUtf8(fileNameBytes)).fileName();
             if (receiveFileName_.isEmpty())
             {
@@ -330,6 +344,7 @@ void TransferManager::processReceiveBuffer()
             receiveFileSize_ = fileSize;
             receiveBytes_ = 0;
             receiveFilePath_ = QDir(saveDirectory_).filePath(receiveFileName_);
+            // QSaveFile 先写临时文件，全部接收成功后再原子提交，失败时不会留下半个目标文件。
             receiveFile_ = std::make_unique<QSaveFile>(receiveFilePath_);
             if (!receiveFile_->open(QIODevice::WriteOnly))
             {
@@ -355,6 +370,7 @@ void TransferManager::processReceiveBuffer()
             return;
         }
 
+        // 仅消费当前文件仍需的字节，多余数据留在缓冲区作为下一帧继续解析（处理粘包）。
         const quint64 remaining = receiveFileSize_ - receiveBytes_;
         const qsizetype writeSize = static_cast<qsizetype>(
             std::min<quint64>(remaining, static_cast<quint64>(receiveBuffer_.size())));
@@ -381,6 +397,7 @@ void TransferManager::processReceiveBuffer()
 void TransferManager::finishReceivedFile()
 {
     const QString completedPath = receiveFilePath_;
+    // 只有字节数完全匹配协议头声明的大小时才提交临时文件。
     if (!receiveFile_->commit())
     {
         failReceive(QStringLiteral("提交接收文件失败：%1").arg(receiveFile_->errorString()));
@@ -398,6 +415,7 @@ void TransferManager::failReceive(const QString &message)
     {
         receiveFile_->cancelWriting();
     }
+    // 协议已失去同步或文件不完整时清空状态并断开连接，禁止继续误解析后续字节。
     resetReceiveState();
     receiveBuffer_.clear();
     emit transferError(message);
@@ -434,10 +452,12 @@ void TransferManager::pumpSend()
         return;
     }
 
+    // 只在 Qt 待发送缓存低于阈值时继续写入，形成由 bytesWritten 驱动的发送流水线。
     while (socket_->bytesToWrite() < MaximumPendingSocketBytes)
     {
         if (sendPrefixOffset_ < sendPrefix_.size())
         {
+            // 协议头必须先于文件数据发送，同时处理 write() 只接收部分字节的情况。
             const qint64 written = socket_->write(sendPrefix_.constData() + sendPrefixOffset_,
                                                   sendPrefix_.size() - sendPrefixOffset_);
             if (written < 0)
@@ -473,6 +493,7 @@ void TransferManager::pumpSend()
             continue;
         }
 
+        // 当前块全部交给 Socket 后再从磁盘读取下一块，内存占用与文件总大小无关。
         pendingSendChunk_.clear();
         pendingSendOffset_ = 0;
         if (sendPayloadQueued_ >= sendFileSize_)
@@ -489,6 +510,7 @@ void TransferManager::pumpSend()
         }
     }
 
+    // 文件数据已全部排入且 Socket 缓存清空后，才向界面报告“发送完成”。
     if (sendPrefixOffset_ == sendPrefix_.size() && sendPayloadQueued_ == sendFileSize_
         && socket_->bytesToWrite() == 0)
     {
